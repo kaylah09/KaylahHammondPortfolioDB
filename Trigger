@@ -1,0 +1,34 @@
+--trigger----------------------------------------------------------------------------------------------------------------
+USE KaylahHammondPortfolio
+GO
+
+
+CREATE TRIGGER tr_ApplicationStatusChange
+ON dbo.[application]
+AFTER UPDATE
+
+AS 
+BEGIN
+INSERT INTO dbo.applicationStatusHistory
+( 
+applicationID,
+oldStatus,
+newStatus,
+changeDate
+)
+
+SELECT 
+d.applicationID,
+d.applicationStatus,
+i.applicationStatus,
+GETDATE()
+FROM deleted AS d
+JOIN inserted AS i
+ON d.applicationID = i.applicationID
+WHERE d.applicationStatus <> i.applicationStatus
+
+IF @@ROWCOUNT > 0
+	PRINT 'Trigger fired: application status changed logged';
+
+END;
+GO
